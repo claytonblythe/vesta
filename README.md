@@ -6,7 +6,7 @@ For example, I currently have a raspberry pi running vestaMusic.py, which is a s
 
 Here is an example of what the current functionality looks like, running a headless raspberry pi musicbox with Mopidy and Spotify integration.
 
-[Alt Test](https://github.com/claytonblythe/vesta/blob/master/figures/screenshot.png)
+![Alt Test](https://github.com/claytonblythe/vesta/blob/master/figures/screenshot.png)
 
 ## Next Steps
 This is a simple example of how the vesta framework can be used for home automation, and I look forward to expanding it in the future. Coming up, I want to make vesta functionality separated from the events that it triggers, to allow it to be integrated into all sorts of commands like turning on lights, sending messages via Telegram or Twilio, and turning on security systems. 
