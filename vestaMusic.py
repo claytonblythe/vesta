@@ -48,10 +48,64 @@ def get_random_playist():
     return(random.choice(my_playlists))
 
 # Return time since last active
-def get_time_since_active(my_dict):
-    return(datetime.datetime.now() - my_dict['last_active_time'])
+def get_time_since_active(last_active_time):
+    return(datetime.datetime.now() - last_active_time)
 
-# Main script
+# Start music from stop
+def start_music():
+    # Get random playlist
+    # Suppress errors to devnull
+    with open(os.devnull, 'w') as devnull:
+        # This is a bit messy, as there are some playlists that are unable to be loaded :/
+        result = None
+        while result is None:
+            try:
+                random_playlist = get_random_playist()
+                my_command = "mpc clear && mpc load '{}' && mpc random on && mpc shuffle && mpc play &".format(random_playlist)
+                output = subprocess.check_output(my_command, stderr=devnull, shell=True)
+                # Output initial playlist and beginning song
+                on_state = True
+                # assign result to something to break while result loop
+                result = "Success"
+            except:
+                  #print("Playing {} failed. Trying another playlist".format(my_dict['current_playlist']))
+                pass
+        # After successful playlist fetching, print playlist and song
+        current_song = get_current_song()
+        print("Playing | {} | {} ".format(random_playlist, current_song))
+        # Assign current song to correct dictionary
+    return(random_playlist, on_state, current_song)
+
+def loop_function(my_dict, my_ip):
+    # Get whether music is currently playing
+    my_dict['on_state'] = music_status()
+    # Check if IP is pingable and reassign last_active_time if it is
+    if get_status(my_ip):
+        my_dict['last_active_time'] = datetime.datetime.now()
+    else:
+        pass
+    #print("Time Since Active: {}".format(my_dict['time_since_active']))
+    # Calculate time since last active
+    my_dict['time_since_active'] = get_time_since_active(my_dict['last_active_time'])
+    current_song = get_current_song()
+    # If >15min of iphone not being connected and if the music is on, pause the music
+    # If iphone has been active less than 15 minutes ago and the on_state is off, turn music on
+    if my_dict['time_since_active'] < datetime.timedelta(minutes=2) and my_dict['on_state'] == True:
+        if my_dict['current_song'] != current_song:
+            print("Playing | {} | {} ".format(my_dict['current_playlist'], current_song))
+            my_dict['current_song'] = current_song
+        else:
+            pass
+    elif my_dict['time_since_active'] < datetime.timedelta(minutes=2) and my_dict['on_state'] == False:
+        my_dict['current_playlist'], my_dict['on_state'], my_dict['current_song'] = start_music()
+    elif my_dict['time_since_active'] > datetime.timedelta(minutes=2) and my_dict['on_state'] == True:
+        os.system('/usr/bin/mpc pause')
+        # Assign the on_state to be off
+        my_dict['on_state'] = False
+    else:
+        pass
+    return(my_dict)
+
 def main():
     my_dict = {}
     # Local IP Address
@@ -61,55 +115,7 @@ def main():
     my_dict['current_song'] = ''
     # Loop indefinitely
     while True:
-        # Get whether music is currently playing
-        my_dict['on_state'] = music_status()
-        # Check if IP is pingable and reassign last_active_time if it is
-        if get_status(my_ip):
-            my_dict['last_active_time'] = datetime.datetime.now()
-        else:
-            pass
-        #print("Time Since Active: {}".format(my_dict['time_since_active']))
-        # Calculate time since last active
-        my_dict['time_since_active'] = get_time_since_active(my_dict)
-        current_song = get_current_song()
-        # If >15min of iphone not being connected and if the music is on, pause the music
-        # If iphone has been active less than 15 minutes ago and the on_state is off, turn music on
-        if my_dict['time_since_active'] < datetime.timedelta(minutes=15) and my_dict['on_state'] == True:
-            if my_dict['current_song'] != current_song:
-               #print("Playing {} | {}  ".format(my_random_playlist, current_song))
-                my_dict['current_song'] = current_song
-            else:
-                pass
-        elif my_dict['time_since_active'] < datetime.timedelta(minutes=15) and my_dict['on_state'] == False:
-            # Get random playlist
-            # Suppress errors to devnull
-            with open(os.devnull, 'w') as devnull:
-                # This is a bit messy, as there are some playlists that are unable to be loaded :/
-                result = None
-                while result is None:
-                    try:
-                        my_random_playlist = get_random_playist()
-                        my_command = "mpc clear && mpc load '{}' && mpc random on && mpc shuffle && mpc play &".format(my_random_playlist)
-                        output = subprocess.check_output(my_command, stderr=devnull, shell=True)
-                        # Output initial playlist and beginning song
-                        my_dict['on_state'] = True
-                        my_dict['current_song'] = current_song
-                        # assign result to something to break while result loop
-                        result = "Success"
-                    except:
-                       #print("Playing {} failed. Trying another playlist".format(my_random_playlist))
-                        pass
-                # After successful playlist fetching,#print playlist and song
-                current_song = get_current_song()
-               #print("Playing: {} | {} ".format(my_random_playlist, current_song))
-                # Assign current song to correct dictionary
-                my_dict['current_song'] = current_song
-        elif my_dict['time_since_active'] > datetime.timedelta(minutes=15) and my_dict['on_state'] == True:
-            os.system('/usr/bin/mpc pause')
-            # Assign the on_state to be off
-            my_dict['on_state'] = False
-        else:
-            pass
+        my_dict = loop_function(my_dict, my_ip)
 
 if __name__ == "__main__":
     main()
