@@ -1,6 +1,6 @@
 
 ## Description
-Vesta is an open source home automation service that is a wrapper over the linux music player daemon (MPD). It attaches to certain local IP addresses on your home network, allowing you to trigger different events based on the activity of devices on your network. 
+Vesta is an open source home automation service, currently acting as a wrapper over the linux music player daemon (MPD). It attaches to certain local IP addresses on your home network, allowing you to trigger different events based on the activity of devices on your network. 
 
 For example, I currently have a raspberry pi running vestaMusic.py, which is a script that monitor's my iphone IP address's activity on my home network, automatically playing random music from my Spotify playlists when I am home. After 20 minutes of network inactivity (if I leave my apartment or turn my iphone into airplane mode) the music will cut off. 
 

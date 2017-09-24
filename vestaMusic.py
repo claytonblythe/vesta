@@ -99,7 +99,7 @@ def loop_function(my_dict, my_ip):
     if my_dict['time_since_active'] < datetime.timedelta(minutes=20) and my_dict['on_state'] == True:
         pass
     elif my_dict['time_since_active'] < datetime.timedelta(minutes=20) and my_dict['on_state'] == False:
-        print('\nWelcome to Vesta Music Player | Your music session tracking IP address {} will now begin. \n\n'.format(my_ip))
+        print('\nWelcome to Vesta Music Player | Your music session tracking IP address {} will now begin. \n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n'.format(my_ip))
         my_dict['current_playlist'] = start_music()
         my_dict['on_state'] = True
     elif my_dict['time_since_active'] > datetime.timedelta(minutes=20) and my_dict['on_state'] == True:
