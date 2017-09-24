@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import datetime
 import os
 import random
@@ -62,27 +63,23 @@ def main():
     while True:
         # Get whether music is currently playing
         my_dict['on_state'] = music_status()
-        current_song = get_current_song()
         # Check if IP is pingable and reassign last_active_time if it is
         if get_status(my_ip):
             my_dict['last_active_time'] = datetime.datetime.now()
         else:
             pass
+        #print("Time Since Active: {}".format(my_dict['time_since_active']))
         # Calculate time since last active
         my_dict['time_since_active'] = get_time_since_active(my_dict)
-        #print("Time Since Active: {}".format(my_dict['time_since_active']))
-        if my_dict['time_since_active'] < datetime.timedelta(minutes=15) and my_dict['on_state'] == True:
-                if my_dict['current_song'] != current_song:
-                    print("Playing: {} | {} ".format(my_random_playlist, current_song))
-                    my_dict['current_song'] = current_song
-                else:
-                    pass
+        current_song = get_current_song()
         # If >15min of iphone not being connected and if the music is on, pause the music
-        elif my_dict['time_since_active'] > datetime.timedelta(minutes=15) and my_dict['on_state'] == True:
-            os.system('/usr/bin/mpc pause')
-            # Assign the on_state to be off
-            my_dict['on_state'] = False
         # If iphone has been active less than 15 minutes ago and the on_state is off, turn music on
+        if my_dict['time_since_active'] < datetime.timedelta(minutes=15) and my_dict['on_state'] == True:
+            if my_dict['current_song'] != current_song:
+               #print("Playing {} | {}  ".format(my_random_playlist, current_song))
+                my_dict['current_song'] = current_song
+            else:
+                pass
         elif my_dict['time_since_active'] < datetime.timedelta(minutes=15) and my_dict['on_state'] == False:
             # Get random playlist
             # Suppress errors to devnull
@@ -100,15 +97,20 @@ def main():
                         # assign result to something to break while result loop
                         result = "Success"
                     except:
-                        print("Playing {} failed. Trying another playlist".format(my_random_playlist))
+                       #print("Playing {} failed. Trying another playlist".format(my_random_playlist))
                         pass
-                # After successful playlist fetching, print playlist and song
+                # After successful playlist fetching,#print playlist and song
                 current_song = get_current_song()
-                print("Playing: {} | {} ".format(my_random_playlist, current_song))
+               #print("Playing: {} | {} ".format(my_random_playlist, current_song))
                 # Assign current song to correct dictionary
                 my_dict['current_song'] = current_song
+        elif my_dict['time_since_active'] > datetime.timedelta(minutes=15) and my_dict['on_state'] == True:
+            os.system('/usr/bin/mpc pause')
+            # Assign the on_state to be off
+            my_dict['on_state'] = False
         else:
             pass
+
 if __name__ == "__main__":
     main()
 
