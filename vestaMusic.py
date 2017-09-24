@@ -3,7 +3,6 @@ import datetime
 import os
 import random
 import subprocess
-import time
 
 # Function to get IP's current activity status
 def get_status(my_ip):
@@ -76,41 +75,44 @@ def start_music():
         # Assign current song to correct dictionary
     return(random_playlist, on_state, current_song)
 
+# Reassign last active time if IP is active
+def assign_last_active_status(my_ip, last_active_time):
+    if get_status(my_ip):
+        last_active_time = datetime.datetime.now()
+    return(last_active_time)
+
+# Return current song and print new message if things have changed
+def check_current_song(dict_current_song, current_playlist):
+    current_song = get_current_song()
+    if dict_current_song != current_song:
+        print("Playing | {} | {} ".format(current_playlist, current_song))
+    return(current_song)
+
+# Loop function to run forever
 def loop_function(my_dict, my_ip):
     # Get whether music is currently playing
     my_dict['on_state'] = music_status()
     # Check if IP is pingable and reassign last_active_time if it is
-    if get_status(my_ip):
-        my_dict['last_active_time'] = datetime.datetime.now()
-    else:
-        pass
+    my_dict['last_active_time'] =  assign_last_active_status(my_ip, my_dict['last_active_time'])
     #print("Time Since Active: {}".format(my_dict['time_since_active']))
     # Calculate time since last active
     my_dict['time_since_active'] = get_time_since_active(my_dict['last_active_time'])
-    current_song = get_current_song()
     # If >15min of iphone not being connected and if the music is on, pause the music
     # If iphone has been active less than 15 minutes ago and the on_state is off, turn music on
     if my_dict['time_since_active'] < datetime.timedelta(minutes=2) and my_dict['on_state'] == True:
-        if my_dict['current_song'] != current_song:
-            print("Playing | {} | {} ".format(my_dict['current_playlist'], current_song))
-            my_dict['current_song'] = current_song
-        else:
-            pass
+        my_dict['current_song'] = check_current_song(my_dict['current_song'], my_dict['current_playlist'])
     elif my_dict['time_since_active'] < datetime.timedelta(minutes=2) and my_dict['on_state'] == False:
         my_dict['current_playlist'], my_dict['on_state'], my_dict['current_song'] = start_music()
     elif my_dict['time_since_active'] > datetime.timedelta(minutes=2) and my_dict['on_state'] == True:
         os.system('/usr/bin/mpc pause')
         # Assign the on_state to be off
         my_dict['on_state'] = False
-    else:
-        pass
     return(my_dict)
 
 def main():
+    # Initialize dictionary
     my_dict = {}
-    # Local IP Address
     my_ip = '192.168.1.114'
-    # Keep last active time in dictionary
     my_dict['last_active_time'] = datetime.datetime.now()
     my_dict['current_song'] = ''
     # Loop indefinitely
@@ -119,4 +121,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
